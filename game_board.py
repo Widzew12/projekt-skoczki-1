@@ -1,4 +1,4 @@
-from static_values import *
+from static_variables import *
 
 
 class GameBoard:

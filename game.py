@@ -2,10 +2,11 @@ import sys
 
 import pygame
 
-from static_values import *
-
+from game_board import GameBoard
 from settings import Settings
 from button import Button
+from game_board_display import GameBoardDisplay
+from field_colliders import FieldColliders
 
 
 class Game:
@@ -17,8 +18,15 @@ class Game:
         self.clock = pygame.time.Clock()
         self.settings = Settings()
 
+        self.game_board = GameBoard()
+
         self.screen = pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height))
         pygame.display.set_caption("Skoczki")
+
+        self._initialize_background()
+
+        self.game_board_display = GameBoardDisplay(self)
+        self.field_colliders = FieldColliders(self)
 
         # Start the game in an inactive state.
         self.game_active = False
@@ -31,7 +39,7 @@ class Game:
             self._check_events()
 
             if self.game_active:
-                print(self.game_active)
+                pass
 
             self._update_screen()
             self.clock.tick(60)
@@ -42,6 +50,14 @@ class Game:
         self.play_button_color = (0, 135, 0)
         self.play_button_text_color = (255, 255, 255)
         self.play_button = Button(self, "Play", self.play_button_rect, self.play_button_color, self.play_button_text_color)
+
+    def _initialize_background(self):
+        self.background_image = pygame.image.load('images/game_board.bmp')
+        self.background_image_rect = self.background_image.get_rect()
+        self.background_image_rect.topleft = (0, 0)
+
+    def _update_background(self):
+        self.screen.blit(self.background_image, self.background_image_rect)
 
     def _check_events(self):
         """Respond to keypresses and mouse events."""
@@ -57,14 +73,23 @@ class Game:
         mouse_pos = pygame.mouse.get_pos()
         if event.button == pygame.BUTTON_LEFT:
             self._check_play_button(mouse_pos)
+            self._check_field_colliders(mouse_pos)
 
     def _check_play_button(self, mouse_pos):
         """Start a new game when the player click Play."""
         button_clicked = self.play_button.rect.collidepoint(mouse_pos)
         if button_clicked and not self.game_active:
-            self._use_pause_button()
+            self._use_play_button()
 
-    def _use_pause_button(self):
+    def _check_field_colliders(self, mouse_pos):
+        field_colliders = self.field_colliders.field_colliders
+        for field_collider in field_colliders:
+            if field_collider.rect.collidepoint(mouse_pos):
+                clicked_field = field_collider.field
+                print(f"{clicked_field.row_index}, {clicked_field.column_index}, {clicked_field.content}")
+                return clicked_field
+
+    def _use_play_button(self):
         self.game_active = True
 
     def _check_keydown_events(self, event):
@@ -74,7 +99,11 @@ class Game:
 
     def _update_screen(self):
         """Update images on the screen, and flip to the new screen."""
-        self.screen.fill(self.settings.bg_color)
+        self._update_background()
+
+        self.game_board_display.update_board()
+
+        self.field_colliders.update_board()
 
         # Draw the play button if the game is inactive.
         if not self.game_active:

@@ -1,4 +1,4 @@
-from static_values import *
+from static_variables import *
 
 from game_board import GameBoard
 from move import Move

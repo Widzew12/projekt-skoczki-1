@@ -1,5 +1,5 @@
 from game_board import GameBoard
-from static_values import *
+from static_variables import *
 
 from field import Field
 
