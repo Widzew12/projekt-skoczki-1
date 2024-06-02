@@ -1,11 +1,6 @@
 import pygame
 
-from static_variables import *
-
-from game_board import GameBoard
 from field import Field
-from move import Move
-from pawn import Pawn
 from field_collider import FieldCollider
 
 
@@ -14,9 +9,11 @@ class FieldColliders:
         self.game = game
         self.settings = self.game.settings
         self.field_colliders = pygame.sprite.Group()
-        self._initialize_board()
+        self.update_board()
 
-    def _initialize_board(self):
+    def update_board(self):
+        self.field_colliders.empty()
+
         new_field_pos_x = self.settings.first_field_pos_x
         new_field_pos_y = self.settings.first_field_pos_y
 
@@ -28,7 +25,7 @@ class FieldColliders:
             new_field_pos_x = self.settings.first_field_pos_x
             new_field_pos_y += self.settings.field_height
 
-        self.update_board()
+        self.update_screen()
 
-    def update_board(self):
+    def update_screen(self):
         self.field_colliders.update()

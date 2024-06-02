@@ -2,9 +2,6 @@ import pygame
 
 from static_variables import *
 
-from game_board import GameBoard
-from field import Field
-from move import Move
 from pawn import Pawn
 
 
@@ -13,9 +10,10 @@ class GameBoardDisplay:
         self.game = game
         self.settings = self.game.settings
         self.pawns = pygame.sprite.Group()
-        self.change_board()
+        self.update_board_display()
 
-    def change_board(self):
+    def update_board_display(self):
+        self.pawns.empty()
         new_pawn_pos_x = self.settings.first_field_pos_x
         new_pawn_pos_y = self.settings.first_field_pos_y
         for row in self.game.game_board.current_game_board_tuple:
@@ -27,7 +25,7 @@ class GameBoardDisplay:
                 new_pawn_pos_x += self.settings.field_width
             new_pawn_pos_x = self.settings.first_field_pos_x
             new_pawn_pos_y += self.settings.field_height
-        self.update_board()
+        self.update_screen()
 
-    def update_board(self):
+    def update_screen(self):
         self.pawns.update()

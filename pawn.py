@@ -20,7 +20,5 @@ class Pawn(Sprite):
 
         self.rect.topleft = position
 
-        print("pawn spawn")
-
     def update(self):
         self.screen.blit(self.image, self.rect)

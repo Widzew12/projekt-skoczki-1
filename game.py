@@ -2,11 +2,15 @@ import sys
 
 import pygame
 
+from static_variables import *
+
 from game_board import GameBoard
 from settings import Settings
 from button import Button
 from game_board_display import GameBoardDisplay
 from field_colliders import FieldColliders
+from move import Move
+from information_text import InformationText
 
 
 class Game:
@@ -27,6 +31,12 @@ class Game:
 
         self.game_board_display = GameBoardDisplay(self)
         self.field_colliders = FieldColliders(self)
+
+        self.information_text = InformationText(self)
+        self.information_text.change_text("Click starting field.")
+
+        self.starting_field = None
+        self.target_field = None
 
         # Start the game in an inactive state.
         self.game_active = False
@@ -86,8 +96,33 @@ class Game:
         for field_collider in field_colliders:
             if field_collider.rect.collidepoint(mouse_pos):
                 clicked_field = field_collider.field
-                print(f"{clicked_field.row_index}, {clicked_field.column_index}, {clicked_field.content}")
-                return clicked_field
+                self._use_field(clicked_field)
+
+    def _use_field(self, field):
+        if self.starting_field is None:
+            self.starting_field = field
+            if field.content == EMPTY:
+                self._reset_starting_and_target_fields()
+                return
+            self.information_text.change_text("Click target field.")
+        elif self.target_field is None:
+            self.target_field = field
+            move = Move(self.starting_field, self.target_field, self.game_board)
+            self._try_make_move(move)
+            self.information_text.change_text("Click starting field.")
+
+    def _try_make_move(self, move):
+        if move.check_and_make_move():
+            new_board_tuple = move.new_board_tuple
+            self.game_board.change_board(new_board_tuple)
+            self.game_board_display.update_board_display()
+            self.field_colliders.update_board()
+
+        self._reset_starting_and_target_fields()
+
+    def _reset_starting_and_target_fields(self):
+        self.starting_field = None
+        self.target_field = None
 
     def _use_play_button(self):
         self.game_active = True
@@ -101,15 +136,24 @@ class Game:
         """Update images on the screen, and flip to the new screen."""
         self._update_background()
 
-        self.game_board_display.update_board()
-
-        self.field_colliders.update_board()
+        self.game_board_display.update_screen()
+        self.field_colliders.update_screen()
+        self.information_text.update_screen()
 
         # Draw the play button if the game is inactive.
         if not self.game_active:
             self.play_button.draw_button()
 
         pygame.display.flip()
+
+    def print_board(self):
+        print("-----------------------------------------------------------------")
+        for row in self.game_board.current_game_board_tuple:
+            output_row = "| "
+            for field_content in row:
+                output_row += field_content + " | "
+            print(output_row)
+            print("-----------------------------------------------------------------")
 
 
 if __name__ == '__main__':
