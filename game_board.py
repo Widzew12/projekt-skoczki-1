@@ -1,4 +1,4 @@
-from static_variables import STARTING_BOARD
+from static_variables import *
 
 
 class GameBoard:
@@ -8,6 +8,8 @@ class GameBoard:
         """Initialize the game board."""
         self.current_game_board_tuple = STARTING_BOARD
         self.previous_game_board_tuples_list = [self.current_game_board_tuple]
+
+        self.win = EMPTY
 
     def change_board(self, new_board_tuple: tuple):
         """Change current_game_board_tuple to new_board_tuple"""
@@ -21,3 +23,4 @@ class GameBoard:
             self.previous_game_board_tuples_list.remove(self.previous_game_board_tuples_list[-1])
             return True
         return False
+
