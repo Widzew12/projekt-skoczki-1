@@ -1,13 +1,13 @@
-from static_variables import *
+from static_variables import STARTING_BOARD
 
 
 class GameBoard:
     """A class that stores the game board and data related to it."""
+
     def __init__(self):
         """Initialize the game board."""
         self.current_game_board_tuple = STARTING_BOARD
         self.previous_game_board_tuples_list = [self.current_game_board_tuple]
-        self.current_turn = WHITE
 
     def change_board(self, new_board_tuple: tuple):
         """Change current_game_board_tuple to new_board_tuple"""

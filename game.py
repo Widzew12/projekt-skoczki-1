@@ -11,6 +11,7 @@ from game_board_display import GameBoardDisplay
 from field_colliders import FieldColliders
 from move import Move
 from information_text import InformationText
+from turn_display import TurnDisplay
 
 
 class Game:
@@ -24,6 +25,10 @@ class Game:
 
         self.game_board = GameBoard()
 
+        self.starting_field = None
+        self.target_field = None
+        self.current_turn = WHITE
+
         self.screen = pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height))
         pygame.display.set_caption("Skoczki")
 
@@ -35,8 +40,8 @@ class Game:
         self.information_text = InformationText(self)
         self.information_text.change_text("Click starting field.")
 
-        self.starting_field = None
-        self.target_field = None
+        self.turn_display = TurnDisplay(self)
+        self.turn_display.update_turn_display()
 
         # Start the game in an inactive state.
         self.game_active = False
@@ -59,7 +64,8 @@ class Game:
         self.play_button_rect.center = self.screen.get_rect().center
         self.play_button_color = (0, 135, 0)
         self.play_button_text_color = (255, 255, 255)
-        self.play_button = Button(self, "Play", self.play_button_rect, self.play_button_color, self.play_button_text_color)
+        self.play_button = Button(self, "Play", self.play_button_rect, self.play_button_color,
+                                  self.play_button_text_color)
 
     def _initialize_background(self):
         self.background_image = pygame.image.load('images/game_board.bmp')
@@ -96,12 +102,13 @@ class Game:
         for field_collider in field_colliders:
             if field_collider.rect.collidepoint(mouse_pos):
                 clicked_field = field_collider.field
-                self._use_field(clicked_field)
+                if self.game_active:
+                    self._use_field(clicked_field)
 
     def _use_field(self, field):
         if self.starting_field is None:
             self.starting_field = field
-            if field.content == EMPTY:
+            if field.content != self.current_turn:
                 self._reset_starting_and_target_fields()
                 return
             self.information_text.change_text("Click target field.")
@@ -115,8 +122,10 @@ class Game:
         if move.check_and_make_move():
             new_board_tuple = move.new_board_tuple
             self.game_board.change_board(new_board_tuple)
+            self._change_turn()
             self.game_board_display.update_board_display()
             self.field_colliders.update_board()
+            self.turn_display.update_turn_display()
 
         self._reset_starting_and_target_fields()
 
@@ -132,6 +141,12 @@ class Game:
         if event.key == pygame.K_q or event.key == pygame.K_ESCAPE:
             sys.exit()
 
+    def _change_turn(self):
+        if self.current_turn == WHITE:
+            self.current_turn = BLACK
+        elif self.current_turn == BLACK:
+            self.current_turn = WHITE
+
     def _update_screen(self):
         """Update images on the screen, and flip to the new screen."""
         self._update_background()
@@ -139,6 +154,7 @@ class Game:
         self.game_board_display.update_screen()
         self.field_colliders.update_screen()
         self.information_text.update_screen()
+        self.turn_display.update_screen()
 
         # Draw the play button if the game is inactive.
         if not self.game_active:
